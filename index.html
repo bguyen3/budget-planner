@@ -2140,7 +2140,7 @@ function renderSummary(){
           :`<div class="chart-tooltip-row ${r.cls}"><span>${r.label}</span><span>${r.val}</span></div>`).join('');
 
         barsHTML+=`<div class="chart-month-group" data-month="${d.m}" data-tip='<div class="chart-tooltip-title">${d.m} ${state.year}</div>${tipHTML.replace(/'/g,"&#39;")}'
-          style="flex:1;display:flex;align-items:flex-end;gap:1px;padding:0 2px;cursor:pointer;border-radius:4px;transition:background .15s"
+          style="flex:1;display:flex;align-items:flex-end;gap:1px;padding:0 2px;cursor:pointer;border-radius:4px;transition:background .15s;position:relative"
           onmouseenter="showChartTip(event,this)" onmouseleave="hideChartTip()">`;
         barData.forEach(b=>{
           const bh=Math.max(2,Math.round((b.v/maxV)*chartH));
