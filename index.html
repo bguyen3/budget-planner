@@ -310,15 +310,17 @@ input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,7
 <div class="app-shell">
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <h1>Personal Budget Planner</h1>
+    <h1>Personal Finance Tool</h1>
     <p style="color:var(--text3);font-size:11px;margin-top:2px">A Ben Project</p>
     <p id="yearBadge" style="color:var(--text3);font-size:11px;margin-top:4px">2025</p>
   </div>
   <div class="sidebar-section">
-    <div class="sidebar-label">Planning</div>
     <button class="nav-item" onclick="showPage('welcome')" id="nav-welcome">
       <span class="nav-icon">👋</span>Welcome
     </button>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Budget Planning</div>
     <button class="nav-item" onclick="showPage('budget')" id="nav-budget">
       <span class="nav-icon">📅</span>Monthly Budget
     </button>
@@ -330,6 +332,12 @@ input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,7
     </button>
     <button class="nav-item" onclick="showPage('summary')" id="nav-summary">
       <span class="nav-icon">✦</span>Summary
+    </button>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Loan Planning</div>
+    <button class="nav-item" onclick="showPage('loans')" id="nav-loans">
+      <span class="nav-icon">🏛️</span>Loan Planner
     </button>
   </div>
   <div class="sidebar-footer">
@@ -361,8 +369,8 @@ input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,7
     <!-- Hero -->
     <div style="text-align:center;padding:48px 24px 40px;border-bottom:1px solid var(--border);margin-bottom:40px">
       <div style="font-size:48px;margin-bottom:16px">📊</div>
-      <h1 style="font-size:28px;font-weight:700;letter-spacing:-.5px;color:var(--text);margin-bottom:10px">Personal Budget Planner</h1>
-      <p style="font-size:15px;color:var(--text2);line-height:1.6;max-width:520px;margin:0 auto 28px">A simple, private budgeting tool that lives entirely in your browser — no accounts, no subscriptions, no data sharing.</p>
+      <h1 style="font-size:28px;font-weight:700;letter-spacing:-.5px;color:var(--text);margin-bottom:10px">Personal Finance Tool</h1>
+      <p style="font-size:15px;color:var(--text2);line-height:1.6;max-width:520px;margin:0 auto 28px">A simple, private personal finance tool that lives entirely in your browser — budget planning, loan payoff projections, and more. No accounts, no subscriptions, no data sharing.</p>
       <button onclick="showPage('budget')" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:var(--radius);border:none;background:var(--text);color:var(--bg);font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
         Get Started →
       </button>
@@ -402,6 +410,10 @@ input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,7
         <div style="display:flex;gap:16px;padding:16px 20px">
           <div style="font-size:13px;font-weight:600;color:var(--text);min-width:190px">📥 Bank CSV Import</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.6">Import transactions straight from your bank's CSV export. Duplicates are detected automatically, and you review everything before it's saved.</div>
+        </div>
+        <div style="display:flex;gap:16px;padding:16px 20px;border-top:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:600;color:var(--text);min-width:190px">🏛️ Loan Planner</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">Track every loan, see your debt-free date, and test how extra monthly payments shrink your payoff timeline and total interest.</div>
         </div>
         <div style="display:flex;gap:16px;padding:16px 20px;border-top:1px solid var(--border)">
           <div style="font-size:13px;font-weight:600;color:var(--text);min-width:190px">→ Fill Forward</div>
@@ -789,6 +801,58 @@ input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,7
   </div>
 </div>
 
+<!-- PAGE 5: LOAN PLANNER -->
+<div class="page" id="page-loans">
+  <div class="page-header">
+    <div><div class="page-title">Loan Planner</div><div class="page-subtitle">Track your loans, see payoff timelines, and test how extra payments change everything.</div></div>
+    <button class="btn btn-primary btn-sm" onclick="openLoanForm()">+ Add Loan</button>
+  </div>
+
+  <div class="summary-cards" id="loanSummaryCards" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div id="loanTypeChips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+  <div id="loanFormWrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow)">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px" id="loanFormTitle">Add Loan</div>
+    <div style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:14px">Already paying this loan off? Easiest: enter today's <strong>remaining balance</strong> and set the first payment to next month. Or enter the original amount, backdate the first payment in the schedule, and mark past months as paid to track your full history.</div>
+    <div style="display:grid;grid-template-columns:1fr 1.3fr 1fr 1fr 1fr 1fr;gap:12px;align-items:end">
+      <div class="form-group"><label class="form-label">Loan Type</label>
+        <select id="loanType" onchange="applyLoanTypeDefaults()">
+          <option value="mortgage">🏠 Mortgage</option>
+          <option value="auto">🚗 Auto</option>
+          <option value="student">🎓 Student</option>
+          <option value="card">💳 Credit Card</option>
+          <option value="personal">💵 Personal</option>
+          <option value="other" selected>📦 Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Loan Name</label><input type="text" id="loanName" placeholder="e.g. Car Loan"></div>
+      <div class="form-group"><label class="form-label">Current Balance ($)</label><input type="number" id="loanPrincipal" placeholder="25000" min="0" step="100"></div>
+      <div class="form-group"><label class="form-label">Interest Rate (APR %)</label><input type="number" id="loanRate" placeholder="6.5" min="0" step="0.01"></div>
+      <div class="form-group"><label class="form-label">I know my…</label>
+        <select id="loanMode" onchange="toggleLoanMode()">
+          <option value="payment">Monthly payment</option>
+          <option value="term">Loan term</option>
+        </select>
+      </div>
+      <div class="form-group" id="loanPaymentGroup"><label class="form-label">Monthly Payment ($)</label><input type="number" id="loanPayment" placeholder="450" min="0" step="10"></div>
+      <div class="form-group" id="loanTermGroup" style="display:none"><label class="form-label">Term (months)</label><input type="number" id="loanTerm" placeholder="60" min="1" step="1"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary btn-sm" onclick="saveLoan()">Save Loan</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeLoanForm()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="loansEmpty" style="display:none" class="empty-state">
+    <div class="es-icon">🏛️</div>
+    <p>No loans yet — click <strong>+ Add Loan</strong> to plan your first payoff.</p>
+  </div>
+
+  <div id="loansList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px"></div>
+
+  <div id="loanDetail"></div>
+</div>
+
 </main>
 </div><!-- end main-content -->
 </div><!-- end app-shell -->
@@ -854,7 +918,8 @@ let state={
   selectedBudgetMonth:MONTHS[new Date().getMonth()],
   selectedTxMonth:'All',
   selectedBvAMonth:MONTHS[new Date().getMonth()],
-  bvaHideEmpty:false
+  bvaHideEmpty:false,
+  loans:[]              // loan planner — not year-scoped
 };
 
 function getBudgetForYear(y){
@@ -925,6 +990,7 @@ function load(){
     state.selectedTxMonth=p.selectedTxMonth||'All';
     state.selectedBvAMonth=p.selectedBvAMonth||MONTHS[new Date().getMonth()];
     state.bvaHideEmpty=p.bvaHideEmpty||false;
+    state.loans=Array.isArray(p.loans)?p.loans:[];state.loans.forEach(l=>{if(!l.type)l.type='other';if(!l.overrides)l.overrides={};if(!l.paid)l.paid={};if(!l.startYM){const d=new Date();l.startYM=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}});
 
     // Load current year's slice into state.budget / state.transactions
     state.budget=getBudgetForYear(state.year);
@@ -947,6 +1013,7 @@ function exportData(){
     selectedTxMonth: state.selectedTxMonth,
     selectedBvAMonth: state.selectedBvAMonth,
     bvaHideEmpty: state.bvaHideEmpty,
+    loans: state.loans,
   };
 
   const json=JSON.stringify(exportObj, null, 2);
@@ -1006,6 +1073,7 @@ function importData(event){
       state.selectedTxMonth=p.selectedTxMonth||'All';
       state.selectedBvAMonth=p.selectedBvAMonth||MONTHS[new Date().getMonth()];
       state.bvaHideEmpty=p.bvaHideEmpty||false;
+      state.loans=Array.isArray(p.loans)?p.loans:[];state.loans.forEach(l=>{if(!l.type)l.type='other';if(!l.overrides)l.overrides={};if(!l.paid)l.paid={};if(!l.startYM){const d=new Date();l.startYM=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}});
       state.budget=getBudgetForYear(state.year);
       state.transactions=getTxForYear(state.year);
 
@@ -1076,6 +1144,7 @@ function showPage(name){
   if(name==='bva')renderBvA();
   if(name==='transactions')renderTransactions();
   if(name==='summary')renderSummary();
+  if(name==='loans')renderLoans();
 }
 
 // ════════════════════════════════════════════════════
@@ -2816,6 +2885,566 @@ function setYear(y){
   if(document.getElementById('page-summary').classList.contains('active'))renderSummary();
   toast('Switched to '+state.year);
 }
+
+
+// ════════════════════════════════════════════════════
+// LOAN PLANNER
+// ════════════════════════════════════════════════════
+const LOAN_TYPES=[
+  {id:'mortgage',icon:'🏠',label:'Mortgage',     defMode:'term',   defTerm:360,defRate:'6.5'},
+  {id:'auto',    icon:'🚗',label:'Auto',         defMode:'term',   defTerm:60, defRate:'7.0'},
+  {id:'student', icon:'🎓',label:'Student',      defMode:'payment',defTerm:120,defRate:'5.5'},
+  {id:'card',    icon:'💳',label:'Credit Card',  defMode:'payment',defTerm:null,defRate:'22'},
+  {id:'personal',icon:'💵',label:'Personal',     defMode:'term',   defTerm:36, defRate:'11'},
+  {id:'other',   icon:'📦',label:'Other',        defMode:'payment',defTerm:60, defRate:'8'},
+];
+const loanType=id=>LOAN_TYPES.find(t=>t.id===id)||LOAN_TYPES[5];
+let _editingLoanId=null, _selectedLoanId=null;
+
+// Payment needed to pay off `principal` at `apr`% over `n` months
+function paymentForTerm(principal, apr, n){
+  const r=apr/100/12;
+  if(r===0) return principal/n;
+  return principal*r/(1-Math.pow(1+r,-n));
+}
+
+// Full amortization. Returns {months, totalInterest, totalPaid, schedule, neverPaysOff}
+// schedule entries: {i, interest, principal, balance}
+function amortize(principal, apr, payment, extra=0){
+  const r=apr/100/12;
+  const pay=payment+extra;
+  if(principal<=0) return {months:0,totalInterest:0,totalPaid:0,schedule:[],neverPaysOff:false};
+  if(r>0 && pay<=principal*r) return {neverPaysOff:true};
+  let bal=principal, months=0, totalInterest=0, totalPaid=0;
+  const schedule=[];
+  const MAX=1200; // 100 years guard
+  while(bal>0.005 && months<MAX){
+    months++;
+    const interest=bal*r;
+    let prin=pay-interest;
+    if(prin>bal){prin=bal;}
+    const paid=prin+interest;
+    bal-=prin;
+    totalInterest+=interest;
+    totalPaid+=paid;
+    schedule.push({i:months,interest,principal:prin,balance:bal});
+  }
+  if(months>=MAX) return {neverPaysOff:true};
+  return {months,totalInterest,totalPaid,schedule,neverPaysOff:false};
+}
+
+// Amortize with per-month payment overrides. getPay(i) returns payment for month i (1-based).
+function amortizeCustom(principal, apr, getPay){
+  const r=apr/100/12;
+  if(principal<=0) return {months:0,totalInterest:0,totalPaid:0,schedule:[],neverPaysOff:false};
+  let bal=principal, months=0, totalInterest=0, totalPaid=0, growStreak=0;
+  const schedule=[];
+  const MAX=1200;
+  while(bal>0.005 && months<MAX){
+    months++;
+    const interest=bal*r;
+    let pay=Math.max(0,getPay(months));
+    let prin=pay-interest;
+    if(prin>bal){prin=bal;pay=prin+interest;}
+    bal-=prin;
+    growStreak=prin<0?growStreak+1:0;
+    if(growStreak>120) return {neverPaysOff:true}; // 10 yrs of balance growth = stuck
+    totalInterest+=interest;
+    totalPaid+=pay;
+    schedule.push({i:months,pay,interest,principal:prin,balance:bal});
+  }
+  if(months>=MAX) return {neverPaysOff:true};
+  return {months,totalInterest,totalPaid,schedule,neverPaysOff:false};
+}
+
+// Date label for payment #i given a loan's start month
+function schedDate(loan,i){
+  const [y,m]=(loan.startYM||'2026-01').split('-').map(Number);
+  const d=new Date(y,m-1+(i-1),1);
+  return d.toLocaleDateString(undefined,{month:'short',year:'numeric'});
+}
+function schedYear(loan,i){
+  const [y,m]=(loan.startYM||'2026-01').split('-').map(Number);
+  return new Date(y,m-1+(i-1),1).getFullYear();
+}
+
+function setPaymentOverride(loanId,idx,val){
+  const loan=state.loans.find(l=>l.id===loanId);
+  if(!loan)return;
+  if(!loan.overrides)loan.overrides={};
+  const v=parseFloat(val);
+  const def=loan.payment+(loan.extra||0);
+  if(isNaN(v)||Math.abs(v-def)<0.005){delete loan.overrides[idx];}
+  else{loan.overrides[idx]=Math.max(0,v);}
+  save();renderLoanDetail();
+}
+function togglePaid(loanId,idx,checked){
+  const loan=state.loans.find(l=>l.id===loanId);
+  if(!loan)return;
+  if(!loan.paid)loan.paid={};
+  if(checked)loan.paid[idx]=true;else delete loan.paid[idx];
+  save();renderLoanDetail();
+}
+function monthsElapsedSinceStart(loan){
+  const [y,m]=(loan.startYM||'').split('-').map(Number);
+  if(!y)return 0;
+  const now=new Date();
+  return (now.getFullYear()-y)*12+(now.getMonth()-(m-1))+1; // payment #1 due in start month
+}
+function markPastPaid(loanId){
+  const loan=state.loans.find(l=>l.id===loanId);
+  if(!loan)return;
+  const overrides=loan.overrides||{};
+  const plan=amortizeCustom(loan.principal,loan.rate,i=>overrides[i]!==undefined?overrides[i]:loan.payment+(loan.extra||0));
+  if(plan.neverPaysOff){toast('⚠️ Fix the payment plan first');return;}
+  const due=Math.min(monthsElapsedSinceStart(loan),plan.months);
+  if(due<=0){toast('No past payments — the first payment is in the future');return;}
+  if(!loan.paid)loan.paid={};
+  let marked=0;
+  for(let i=1;i<=due;i++){if(!loan.paid[i]){loan.paid[i]=true;marked++;}}
+  save();renderLoanDetail();
+  toast(marked?`✓ Marked ${marked} payment${marked>1?'s':''} as paid through today`:'All past payments already marked');
+}
+function clearLoanOverrides(loanId){
+  const loan=state.loans.find(l=>l.id===loanId);
+  if(!loan)return;
+  if(!confirm('Reset all custom payment amounts back to the planned payment?'))return;
+  loan.overrides={};
+  save();renderLoanDetail();
+  toast('✓ Schedule reset to planned payments');
+}
+function setLoanStartYM(loanId,val){
+  const loan=state.loans.find(l=>l.id===loanId);
+  if(!loan||!/^\d{4}-\d{2}$/.test(val))return;
+  loan.startYM=val;
+  save();renderLoanDetail();
+}
+
+function payoffDateStr(months){
+  const d=new Date();
+  d.setMonth(d.getMonth()+months);
+  return d.toLocaleDateString(undefined,{month:'short',year:'numeric'});
+}
+function yrsMo(months){
+  const y=Math.floor(months/12), m=months%12;
+  if(y===0)return m+' mo';
+  if(m===0)return y+' yr';
+  return y+' yr '+m+' mo';
+}
+
+function applyLoanTypeDefaults(){
+  const t=loanType(document.getElementById('loanType').value);
+  // Only adjust placeholders & mode — never overwrite values the user typed
+  document.getElementById('loanRate').placeholder=t.defRate;
+  if(t.defTerm)document.getElementById('loanTerm').placeholder=t.defTerm;
+  if(!_editingLoanId){
+    document.getElementById('loanMode').value=t.defMode;
+    toggleLoanMode();
+  }
+  if(!document.getElementById('loanName').value){
+    document.getElementById('loanName').placeholder=t.id==='card'?'e.g. Chase Visa':t.label+' loan';
+  }
+}
+function toggleLoanMode(){
+  const mode=document.getElementById('loanMode').value;
+  document.getElementById('loanPaymentGroup').style.display=mode==='payment'?'':'none';
+  document.getElementById('loanTermGroup').style.display=mode==='term'?'':'none';
+}
+function openLoanForm(loan){
+  _editingLoanId=loan?loan.id:null;
+  document.getElementById('loanFormTitle').textContent=loan?'Edit Loan':'Add Loan';
+  document.getElementById('loanType').value=loan?(loan.type||'other'):'other';
+  document.getElementById('loanName').value=loan?loan.name:'';
+  document.getElementById('loanPrincipal').value=loan?loan.principal:'';
+  document.getElementById('loanRate').value=loan?loan.rate:'';
+  document.getElementById('loanMode').value=loan?loan.mode:'payment';
+  document.getElementById('loanPayment').value=loan&&loan.mode==='payment'?loan.payment:'';
+  document.getElementById('loanTerm').value=loan&&loan.mode==='term'?loan.termMonths:'';
+  toggleLoanMode();
+  applyLoanTypeDefaults();
+  document.getElementById('loanFormWrap').style.display='';
+  document.getElementById('loanName').focus();
+}
+function closeLoanForm(){
+  _editingLoanId=null;
+  document.getElementById('loanFormWrap').style.display='none';
+}
+function saveLoan(){
+  const type=document.getElementById('loanType').value;
+  const name=document.getElementById('loanName').value.trim();
+  const principal=parseFloat(document.getElementById('loanPrincipal').value);
+  const rate=parseFloat(document.getElementById('loanRate').value);
+  const mode=document.getElementById('loanMode').value;
+  let payment=null, termMonths=null;
+  if(!name||isNaN(principal)||principal<=0||isNaN(rate)||rate<0){toast('⚠️ Fill in name, balance, and rate');return;}
+  if(mode==='payment'){
+    payment=parseFloat(document.getElementById('loanPayment').value);
+    if(isNaN(payment)||payment<=0){toast('⚠️ Enter a monthly payment');return;}
+    const r=rate/100/12;
+    if(r>0&&payment<=principal*r){toast('⚠️ That payment doesn\'t cover the monthly interest ('+fmt(principal*r)+') — the loan would never pay off');return;}
+  }else{
+    termMonths=parseInt(document.getElementById('loanTerm').value);
+    if(isNaN(termMonths)||termMonths<1){toast('⚠️ Enter the loan term in months');return;}
+    payment=paymentForTerm(principal,rate,termMonths);
+  }
+  if(_editingLoanId){
+    const loan=state.loans.find(l=>l.id===_editingLoanId);
+    if(loan){Object.assign(loan,{type,name,principal,rate,mode,payment,termMonths});}
+  }else{
+    const _d=new Date();
+    state.loans.push({id:Date.now().toString(36),type,name,principal,rate,mode,payment,termMonths,extra:0,overrides:{},paid:{},startYM:_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')});
+    _selectedLoanId=state.loans[state.loans.length-1].id;
+  }
+  save();closeLoanForm();renderLoans();
+  toast('✓ Loan saved');
+}
+function deleteLoan(id){
+  if(!confirm('Delete this loan?'))return;
+  state.loans=state.loans.filter(l=>l.id!==id);
+  if(_selectedLoanId===id)_selectedLoanId=null;
+  save();renderLoans();
+  toast('Loan deleted');
+}
+function setLoanExtra(id,val){
+  const loan=state.loans.find(l=>l.id===id);
+  if(!loan)return;
+  loan.extra=Math.max(0,parseFloat(val)||0);
+  save();renderLoanDetail();
+}
+function selectLoan(id){
+  _selectedLoanId=_selectedLoanId===id?null:id;
+  renderLoans();
+}
+
+function renderLoans(){
+  const loans=state.loans;
+  const empty=document.getElementById('loansEmpty');
+  const list=document.getElementById('loansList');
+  const cards=document.getElementById('loanSummaryCards');
+  if(!list)return;
+
+  if(!loans.length){
+    empty.style.display='';list.innerHTML='';cards.innerHTML='';
+    document.getElementById('loanDetail').innerHTML='';
+    return;
+  }
+  empty.style.display='none';
+
+  // Summary cards across all loans (at minimum payments)
+  let totDebt=0,totPay=0,totInterest=0,maxMonths=0,anyNever=false;
+  const results=loans.map(l=>{
+    const res=amortize(l.principal,l.rate,l.payment,0);
+    totDebt+=l.principal; totPay+=l.payment;
+    if(res.neverPaysOff){anyNever=true;}
+    else{totInterest+=res.totalInterest; maxMonths=Math.max(maxMonths,res.months);}
+    return res;
+  });
+  const wavgRate=totDebt>0?loans.reduce((s,l)=>s+l.rate*l.principal,0)/totDebt:0;
+  cards.innerHTML=`
+    <div class="sum-card expense"><div class="sum-label">Total Debt</div>
+      <div class="sum-value negative">$${Math.round(totDebt).toLocaleString()}</div>
+      <div class="sum-sub">${loans.length} loan${loans.length>1?'s':''}</div></div>
+    <div class="sum-card txcount"><div class="sum-label">Monthly Payments</div>
+      <div class="sum-value">$${Math.round(totPay).toLocaleString()}</div>
+      <div class="sum-sub">combined minimums</div></div>
+    <div class="sum-card txcount"><div class="sum-label">Avg Interest Rate</div>
+      <div class="sum-value">${wavgRate.toFixed(2)}%</div>
+      <div class="sum-sub">weighted by balance</div></div>
+    <div class="sum-card ${anyNever?'net-neg':'net-pos'}"><div class="sum-label">Debt-Free Date</div>
+      <div class="sum-value" style="font-size:18px">${anyNever?'—':payoffDateStr(maxMonths)}</div>
+      <div class="sum-sub">${anyNever?'a payment doesn\'t cover interest':'$'+Math.round(totInterest).toLocaleString()+' total interest'}</div></div>`;
+
+  // Debt by type chips
+  const byType={};
+  loans.forEach(l=>{const t=l.type||'other';if(!byType[t])byType[t]={total:0,n:0};byType[t].total+=l.principal;byType[t].n++;});
+  document.getElementById('loanTypeChips').innerHTML=Object.entries(byType).map(([tid,d])=>{
+    const t=loanType(tid);
+    return `<div style="display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px">
+      <span>${t.icon}</span><span style="font-weight:600;color:var(--text)">${t.label}</span>
+      <span style="font-family:var(--mono);color:var(--text2)">$${Math.round(d.total).toLocaleString()}</span>
+      <span style="color:var(--text3);font-size:11px">· ${d.n}</span>
+    </div>`;
+  }).join('');
+
+  // Loan cards — sorted by type then balance
+  const typeOrder=LOAN_TYPES.map(t=>t.id);
+  const sorted=loans.map((l,i)=>({l,res:results[i]}))
+    .sort((a,b)=>typeOrder.indexOf(a.l.type||'other')-typeOrder.indexOf(b.l.type||'other')||b.l.principal-a.l.principal);
+  list.innerHTML=sorted.map(({l,res})=>{
+    const sel=_selectedLoanId===l.id;
+    const t=loanType(l.type);
+    return `<div onclick="selectLoan('${l.id}')" style="background:var(--surface);border:1px solid ${sel?'var(--blue)':'var(--border)'};${sel?'box-shadow:0 0 0 3px rgba(26,79,138,.1);':''}border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:border-color .12s">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;color:var(--text)"><span style="margin-right:6px">${t.icon}</span>${l.name}</div>
+        <div style="display:flex;gap:4px">
+          <button onclick="event.stopPropagation();openLoanForm(state.loans.find(x=>x.id==='${l.id}'))" class="edit-btn" title="Edit">✏</button>
+          <button onclick="event.stopPropagation();deleteLoan('${l.id}')" class="delete-btn">×</button>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:var(--text);margin-bottom:8px">$${Math.round(l.principal).toLocaleString()}</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+        <span>${l.rate}% APR</span>
+        <span>$${Math.round(l.payment).toLocaleString()}/mo</span>
+        <span>${res.neverPaysOff?'⚠️ never':payoffDateStr(res.months)}</span>
+      </div>
+      ${sel?'<div style="margin-top:8px;font-size:10px;color:var(--blue);font-weight:600">▼ Details below</div>':''}
+    </div>`;
+  }).join('');
+
+  renderLoanDetail();
+}
+
+// Average monthly net cash flow from the current year's budget data
+function computeAvgMonthlySurplus(){
+  const yd=getYearData();
+  const months=MONTHS.filter(m=>state.transactions.some(t=>t.month===m));
+  if(!months.length)return{avg:0,months:0};
+  const net=yd.filter(d=>months.includes(d.m)).reduce((s,d)=>s+d.aNet,0);
+  return{avg:net/months.length,months:months.length};
+}
+
+function renderLoanDetail(){
+  const wrap=document.getElementById('loanDetail');
+  if(!wrap)return;
+  const loan=state.loans.find(l=>l.id===_selectedLoanId);
+  if(!loan){wrap.innerHTML='';return;}
+
+  const base=amortize(loan.principal,loan.rate,loan.payment,0);
+  const extra=loan.extra||0;
+  const overrides=loan.overrides||{};
+  const hasOverrides=Object.keys(overrides).length>0;
+  // The actual plan: default payment+extra, with any per-month custom amounts
+  const acc=amortizeCustom(loan.principal,loan.rate,i=>overrides[i]!==undefined?overrides[i]:loan.payment+extra);
+  if(base.neverPaysOff){
+    wrap.innerHTML=`<div class="info-box" style="background:var(--red-lt);border-color:rgba(143,32,32,.25)"><strong style="color:var(--red)">⚠️ This loan never pays off</strong> — the monthly payment doesn't cover the interest. Edit the loan and raise the payment above ${fmt(loan.principal*loan.rate/100/12)}/month.</div>`;
+    return;
+  }
+  if(acc.neverPaysOff){
+    wrap.innerHTML=`<div class="info-box" style="background:var(--red-lt);border-color:rgba(143,32,32,.25)"><strong style="color:var(--red)">⚠️ This payment plan never pays off</strong> — your custom payment amounts don't keep up with interest. <button class="btn btn-ghost btn-sm" onclick="clearLoanOverrides('${loan.id}')">Reset custom payments</button></div>`;
+    return;
+  }
+  const savedInterest=base.totalInterest-acc.totalInterest;
+  const savedMonths=base.months-acc.months;
+
+  wrap.innerHTML=`
+  <div class="chart-card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <div class="chart-title" style="margin:0">${loan.name} — Payoff Plan</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap">Extra payment / month:</span>
+        <input type="number" value="${extra||''}" placeholder="0" min="0" step="25"
+          style="width:100px;padding:6px 10px;font-family:var(--mono);font-size:13px"
+          onchange="setLoanExtra('${loan.id}',this.value)">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px">Payoff Date</div>
+        <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text)">${payoffDateStr(acc.months)}</div>
+        ${extra>0&&savedMonths>0?`<div style="font-size:10px;color:var(--green);font-weight:600;margin-top:2px">▲ ${yrsMo(savedMonths)} sooner</div>`:`<div style="font-size:10px;color:var(--text3);margin-top:2px">${yrsMo(acc.months)} to go</div>`}
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px">Total Interest</div>
+        <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text)">$${Math.round(acc.totalInterest).toLocaleString()}</div>
+        ${extra>0&&savedInterest>0?`<div style="font-size:10px;color:var(--green);font-weight:600;margin-top:2px">▲ saves $${Math.round(savedInterest).toLocaleString()}</div>`:`<div style="font-size:10px;color:var(--text3);margin-top:2px">over the life of the loan</div>`}
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px">Total Cost</div>
+        <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text)">$${Math.round(acc.totalPaid).toLocaleString()}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">principal + interest</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px">Monthly Payment</div>
+        <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text)">$${Math.round(loan.payment+extra).toLocaleString()}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${extra>0?'$'+Math.round(loan.payment).toLocaleString()+' min + $'+Math.round(extra).toLocaleString()+' extra':'minimum payment'}</div>
+      </div>
+    </div>
+
+    ${(()=>{
+      const sur=computeAvgMonthlySurplus();
+      const cardNote=loan.type==='card'?`<div style="font-size:11px;color:var(--text3);margin-bottom:12px">💡 Credit card payoff assumes you pay a <strong>fixed amount</strong> each month rather than the bank's declining minimum — that's the strategy that actually gets you out of debt.</div>`:'';
+      // Build scenario list
+      const mk=(label,ex)=>{
+        const r=amortize(loan.principal,loan.rate,loan.payment,ex);
+        return r.neverPaysOff?null:{label,ex,months:r.months,interest:r.totalInterest};
+      };
+      const scenarios=[mk('Minimum only',0)];
+      if(extra>0)scenarios.push(mk('Current (+$'+Math.round(extra).toLocaleString()+')',extra));
+      if(sur.avg>10){
+        const half=Math.round(sur.avg/2), full=Math.round(sur.avg);
+        if(Math.abs(half-extra)>5)scenarios.push(mk('+ half surplus ($'+half.toLocaleString()+')',half));
+        if(Math.abs(full-extra)>5)scenarios.push(mk('+ full surplus ($'+full.toLocaleString()+')',full));
+      }else{
+        if(Math.abs(100-extra)>5)scenarios.push(mk('+ $100/mo',100));
+        if(Math.abs(250-extra)>5)scenarios.push(mk('+ $250/mo',250));
+      }
+      const scen=scenarios.filter(Boolean);
+      const baseM=scen[0].months, baseI=scen[0].interest;
+
+      // Budget surplus callout
+      let surplusHTML='';
+      if(sur.months===0){
+        surplusHTML=`<div style="background:var(--surface2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--text3)">📊 Add transactions in <strong>Budget Planning</strong> and your average monthly surplus will appear here as a suggested extra payment.</div>`;
+      }else if(sur.avg>10){
+        surplusHTML=`<div style="background:var(--teal-lt);border:1px solid rgba(26,92,79,.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--text2)">
+          💡 Your budget shows an average surplus of <strong style="color:var(--teal);font-family:var(--mono)">$${Math.round(sur.avg).toLocaleString()}/mo</strong> (${sur.months} month${sur.months>1?'s':''} of data). Put it to work:
+          <span style="display:inline-flex;gap:6px;margin-left:8px">
+            <button class="btn btn-sm" style="background:var(--teal);color:#fff;border:none;padding:3px 10px;font-size:11px" onclick="setLoanExtra('${loan.id}',${Math.round(sur.avg/2)})">Apply half</button>
+            <button class="btn btn-sm" style="background:var(--teal);color:#fff;border:none;padding:3px 10px;font-size:11px" onclick="setLoanExtra('${loan.id}',${Math.round(sur.avg)})">Apply all</button>
+          </span>
+        </div>`;
+      }else{
+        surplusHTML=`<div style="background:var(--surface2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;font-size:12px;color:var(--text3)">📊 Your budget currently shows no monthly surplus (avg $${Math.round(sur.avg).toLocaleString()}/mo over ${sur.months} month${sur.months>1?'s':''}). Trimming expenses frees up extra-payment money.</div>`;
+      }
+
+      // Payoff timeline: dot per scenario along base timeline
+      const tlDots=scen.map((s,i)=>{
+        const pct=Math.min(100,s.months/baseM*100);
+        const col=i===0?'var(--text3)':'var(--teal)';
+        return `<div style="position:absolute;left:${pct}%;top:50%;transform:translate(-50%,-50%)" title="${s.label}: ${payoffDateStr(s.months)}">
+          <div style="width:12px;height:12px;border-radius:50%;background:${col};border:2px solid var(--surface)"></div>
+          <div style="position:absolute;top:${i%2===0?'-26px':'14px'};left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;color:var(--text2);font-family:var(--mono)">${payoffDateStr(s.months)}</div>
+        </div>`;
+      }).join('');
+      const timelineHTML=`<div class="chart-title" style="margin-top:4px">Payoff Timeline <span class="chart-sub">each dot = a scenario's debt-free date</span></div>
+      <div style="position:relative;height:54px;margin:0 20px 18px">
+        <div style="position:absolute;top:50%;left:0;right:0;height:4px;background:var(--surface2);border-radius:2px"></div>
+        <div style="position:absolute;top:50%;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--teal),var(--surface2));border-radius:2px;opacity:.25"></div>
+        ${tlDots}
+      </div>`;
+
+      // Scenario table
+      const rows=scen.map((s,i)=>{
+        const mSaved=baseM-s.months, iSaved=baseI-s.interest;
+        return `<tr ${Math.abs(s.ex-extra)<1&&extra>0?'style="background:var(--teal-lt)"':''}>
+          <td style="text-align:left;font-weight:600">${s.label}</td>
+          <td class="amount">$${Math.round(loan.payment+s.ex).toLocaleString()}/mo</td>
+          <td class="amount">${payoffDateStr(s.months)}</td>
+          <td class="amount" style="color:${mSaved>0?'var(--green)':'var(--text3)'}">${mSaved>0?'▲ '+yrsMo(mSaved):'—'}</td>
+          <td class="amount" style="color:${iSaved>0?'var(--green)':'var(--text3)'}">${iSaved>0?'$'+Math.round(iSaved).toLocaleString():'—'}</td>
+        </tr>`;
+      }).join('');
+      const tableHTML=`<div class="chart-title">What-If Scenarios <span class="chart-sub">click Apply above or type any amount in the extra payment box</span></div>
+      <div style="overflow-x:auto;margin-bottom:18px"><table class="bva-table" style="box-shadow:none">
+        <thead><tr><th style="text-align:left">Scenario</th><th>Total Payment</th><th>Debt-Free</th><th>Time Saved</th><th>Interest Saved</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`;
+
+      return cardNote+surplusHTML+timelineHTML+tableHTML;
+    })()}
+    <div class="chart-title">Balance Over Time <span class="chart-sub">${(extra>0||hasOverrides)?'solid = your plan · dashed = minimum only':'at minimum payment'}</span></div>
+    <canvas id="chartLoanBalance" height="200"></canvas>
+
+    ${(()=>{
+      // ── Interactive Payment Schedule ──
+      const paid=loan.paid||{};
+      const paidRows=acc.schedule.filter(s=>paid[s.i]);
+      const paidPrin=paidRows.reduce((s,r)=>s+r.principal,0);
+      const paidInt=paidRows.reduce((s,r)=>s+r.interest,0);
+      const progressHTML=paidRows.length?`<span style="font-size:11px;color:var(--green);font-weight:600">${paidRows.length} of ${acc.months} payments made · $${Math.round(paidPrin).toLocaleString()} principal + $${Math.round(paidInt).toLocaleString()} interest paid</span>`:`<span style="font-size:11px;color:var(--text3)">check ✓ Paid as you make payments to track progress</span>`;
+      const dueCount=Math.min(monthsElapsedSinceStart(loan),acc.months);
+      const unpaidDue=acc.schedule.filter(s=>s.i<=dueCount&&!paid[s.i]).length;
+      const markPastBtn=unpaidDue>0?`<button class="btn btn-ghost btn-sm" onclick="markPastPaid('${loan.id}')" title="Mark every payment month up to today as paid">✓ Mark ${unpaidDue} past as paid</button>`:'';
+
+      let rows='', lastYr=null;
+      acc.schedule.forEach(s=>{
+        const yr=schedYear(loan,s.i);
+        if(yr!==lastYr){
+          lastYr=yr;
+          rows+=`<tr style="background:var(--surface2)"><td colspan="6" style="text-align:left;font-weight:700;font-size:11px;letter-spacing:.04em;padding:6px 12px">${yr}</td></tr>`;
+        }
+        const isOv=overrides[s.i]!==undefined;
+        const isPaid=!!paid[s.i];
+        rows+=`<tr style="${isPaid?'background:rgba(26,122,85,.06)':''}">
+          <td style="text-align:left;font-family:var(--mono);font-size:11px;color:var(--text3);white-space:nowrap">#${s.i} · ${schedDate(loan,s.i)}</td>
+          <td><input type="number" value="${s.pay.toFixed(2)}" min="0" step="10"
+            style="width:108px;padding:4px 8px;font-family:var(--mono);font-size:12px;text-align:right;${isOv?'border-color:var(--blue);border-width:2px;background:var(--blue-lt)':''}"
+            title="${isOv?'Custom amount — clear to restore planned payment':'Planned payment — edit to customize this month'}"
+            onchange="setPaymentOverride('${loan.id}',${s.i},this.value)"></td>
+          <td class="amount" style="font-size:12px">$${Math.round(s.principal).toLocaleString()}</td>
+          <td class="amount" style="font-size:12px;color:var(--red)">$${Math.round(s.interest).toLocaleString()}</td>
+          <td class="amount" style="font-size:12px;font-weight:600">$${Math.round(Math.max(0,s.balance)).toLocaleString()}</td>
+          <td style="text-align:center"><label style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:10px;color:${isPaid?'var(--green)':'var(--text3)'}">
+            <input type="checkbox" ${isPaid?'checked':''} onchange="togglePaid('${loan.id}',${s.i},this.checked)" style="width:13px;height:13px;cursor:pointer">${isPaid?'Paid':''}
+          </label></td>
+        </tr>`;
+      });
+
+      return `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px;margin-bottom:8px">
+        <div class="chart-title" style="margin:0">Payment Schedule <span class="chart-sub">edit any payment · check off as you pay</span></div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          ${progressHTML}
+          ${markPastBtn}
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">First payment:
+            <input type="month" value="${loan.startYM}" onchange="setLoanStartYM('${loan.id}',this.value)" style="padding:4px 8px;font-size:12px;font-family:var(--mono)">
+          </label>
+          ${hasOverrides?`<button class="btn btn-ghost btn-sm" onclick="clearLoanOverrides('${loan.id}')" title="Remove all custom amounts">↺ Reset</button>`:''}
+        </div>
+      </div>
+      <div style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)">
+        <table class="bva-table" style="box-shadow:none;margin:0">
+          <thead style="position:sticky;top:0;z-index:2"><tr><th style="text-align:left">Payment</th><th>Amount</th><th>Principal</th><th>Interest</th><th>Balance</th><th>Paid?</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px">Interest is modeled per monthly payment cycle, the way most installment loans charge it. If your loan accrues daily (many student loans, credit cards), paying earlier in the cycle means you'll do slightly <em>better</em> than projected.</div>`;
+    })()}
+  </div>`;
+
+  // Draw the balance chart
+  drawCanvas('chartLoanBalance',(ctx,W,H)=>{
+    const pad={t:10,r:14,b:26,l:56};
+    const cw=W-pad.l-pad.r, ch=H-pad.t-pad.b;
+    const maxBal=loan.principal;
+    const maxM=base.months;
+    const sx=i=>pad.l+(i/maxM)*cw;
+    const sy=v=>pad.t+ch*(1-v/maxBal);
+
+    // grid + y labels
+    ctx.font='10px DM Mono';ctx.fillStyle='#a09f9a';
+    for(let t=0;t<=4;t++){
+      const v=maxBal*t/4, y=sy(v);
+      ctx.textAlign='right';ctx.fillText(fmtK(v),pad.l-6,y+3);
+      ctx.strokeStyle='rgba(0,0,0,0.05)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    }
+    // x labels (years)
+    ctx.textAlign='center';ctx.font='10px Geist';
+    const yrStep=Math.max(1,Math.ceil(maxM/12/8));
+    for(let yr=0;yr*12<=maxM;yr+=yrStep){
+      ctx.fillText('Yr '+yr,sx(yr*12),pad.t+ch+16);
+    }
+
+    // base line (dashed if extra shown)
+    const drawLine=(sched,dashed,color)=>{
+      ctx.beginPath();
+      ctx.moveTo(sx(0),sy(loan.principal));
+      sched.forEach(s=>ctx.lineTo(sx(s.i),sy(Math.max(0,s.balance))));
+      ctx.strokeStyle=color;ctx.lineWidth=2;
+      ctx.setLineDash(dashed?[5,4]:[]);
+      ctx.stroke();ctx.setLineDash([]);
+    };
+    if(extra>0||hasOverrides){
+      drawLine(base.schedule,true,'rgba(143,32,32,.45)');
+      drawLine(acc.schedule,false,'#1a5c4f');
+      // area fill under accelerated line
+      ctx.beginPath();
+      ctx.moveTo(sx(0),sy(loan.principal));
+      acc.schedule.forEach(s=>ctx.lineTo(sx(s.i),sy(Math.max(0,s.balance))));
+      ctx.lineTo(sx(acc.months),sy(0));ctx.lineTo(sx(0),sy(0));ctx.closePath();
+      ctx.fillStyle='rgba(26,92,79,.08)';ctx.fill();
+    }else{
+      drawLine(base.schedule,false,'#1a5c4f');
+      ctx.beginPath();
+      ctx.moveTo(sx(0),sy(loan.principal));
+      base.schedule.forEach(s=>ctx.lineTo(sx(s.i),sy(Math.max(0,s.balance))));
+      ctx.lineTo(sx(base.months),sy(0));ctx.lineTo(sx(0),sy(0));ctx.closePath();
+      ctx.fillStyle='rgba(26,92,79,.08)';ctx.fill();
+    }
+  });
+}
+
 
 function applyTheme(dark){
   document.documentElement.setAttribute('data-theme',dark?'dark':'');
